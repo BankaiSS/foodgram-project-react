@@ -1,9 +1,10 @@
 from drf_extra_fields.fields import Base64ImageField
+from recipes.models import Ingredient
+from recipes.models import (Favourites, IngredientsInRecipe, Recipes,
+                            ShoppingList)
 from rest_framework import serializers
 from rest_framework.serializers import CurrentUserDefault
-
-from recipes.models import (Favourites, Ingredient, IngredientsInRecipe,
-                            Recipes, ShoppingList, Tags)
+from recipes.models import Tags
 from users.models import Subscription, User
 
 from . import validators

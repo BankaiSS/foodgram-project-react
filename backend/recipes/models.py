@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import UniqueConstraint
 
@@ -41,7 +42,7 @@ class Recipes(models.Model):
                                on_delete=models.CASCADE,
                                verbose_name='Author')
     name = models.CharField(verbose_name='Name', max_length=50, blank=False)
-    image = models.ImageField(upload_to='recipes/images/',
+    image = models.ImageField(upload_to='recipes/static/',
                               blank=False, verbose_name='Image')
     text = models.TextField(verbose_name='Description', blank=False,
                             max_length=2000)
@@ -67,30 +68,31 @@ class Recipes(models.Model):
 
 
 class IngredientsInRecipe(models.Model):
-    """Модель для добавления ингредиентов в рецепт"""
     recipe = models.ForeignKey(
         Recipes,
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients',
+        related_name='ingredient_list',
+        verbose_name='Рецепт',
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients',
+        verbose_name='Ингредиент',
     )
-    amount = models.PositiveIntegerField(verbose_name='Amount',)
+    amount = models.PositiveSmallIntegerField(
+        'Количество',
+        validators=[MinValueValidator(1, message='Минимальное количество 1!')]
+    )
 
     class Meta:
-        verbose_name = 'Ingredient in recipe'
-        verbose_name_plural = 'Ingredients in recipe'
-        constraints = (
-            UniqueConstraint(fields=('recipe', 'ingredient'),
-                             name='recipeingredient'),
-        )
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
 
     def __str__(self):
-        return f'{self.recipe_id} {self.ingredient_id}'
-
+        return (
+            f'{self.ingredient.name} ({self.ingredient.measurement_unit})'
+            f' - {self.amount} '
+        )
 
 class Favourites(models.Model):
     """Модель для списка избранного"""
