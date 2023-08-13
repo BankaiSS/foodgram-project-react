@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.db.models import UniqueConstraint
 
@@ -7,7 +7,6 @@ User = get_user_model()
 
 
 class Ingredient(models.Model):
-    """Модель для ингредиентов рецепта"""
     name = models.CharField(max_length=200, verbose_name='Name')
     measurement_unit = models.CharField(max_length=200,
                                         verbose_name='measurement_unit',)
@@ -22,9 +21,18 @@ class Ingredient(models.Model):
 
 
 class Tags(models.Model):
-    """Модель для тегов рецептов"""
     name = models.CharField(max_length=200, verbose_name='Name', null=True)
-    color = models.CharField(max_length=7, null=True, verbose_name='Color')
+    color = models.CharField(
+        'Цветовой HEX-код',
+        unique=True,
+        max_length=7,
+        validators=[
+            RegexValidator(
+                regex='^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+                message='Введенное значение не является цветом в формате HEX!'
+            )
+        ]
+    )
     slug = models.SlugField(max_length=200, null=True, verbose_name='Slug')
 
     class Meta:
@@ -37,12 +45,11 @@ class Tags(models.Model):
 
 
 class Recipes(models.Model):
-    """Модель для рецептов"""
     author = models.ForeignKey(to=User, related_name='recipes',
                                on_delete=models.CASCADE,
                                verbose_name='Author')
     name = models.CharField(verbose_name='Name', max_length=50, blank=False)
-    image = models.ImageField(upload_to='recipes/static/',
+    image = models.ImageField(upload_to='recipes/',
                               blank=False, verbose_name='Image')
     text = models.TextField(verbose_name='Description', blank=False,
                             max_length=2000)
@@ -94,8 +101,8 @@ class IngredientsInRecipe(models.Model):
             f' - {self.amount} '
         )
 
+
 class Favourites(models.Model):
-    """Модель для списка избранного"""
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              related_name='favourites',
@@ -123,7 +130,6 @@ class Favourites(models.Model):
 
 
 class ShoppingList(models.Model):
-    """Модель для списка покупок"""
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              related_name='shopping_list_user',

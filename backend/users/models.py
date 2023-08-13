@@ -4,8 +4,6 @@ from django.db.models import UniqueConstraint
 
 
 class User(AbstractUser):
-    """Кастомная модель пользователя с полем почты"""
-
     email = models.EmailField(max_length=254, unique=True, blank=False,
                               verbose_name='Email')
     username = models.CharField(verbose_name='Username',
@@ -34,7 +32,6 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
-    """Модель для подписки на авторов"""
     subscriber = models.ForeignKey(to=User, verbose_name='Subscriber',
                                    on_delete=models.CASCADE,
                                    related_name='subscriber')
