@@ -20,7 +20,7 @@ class Ingredient(models.Model):
         return self.name
 
 
-class Tags(models.Model):
+class Tag(models.Model):
     name = models.CharField(max_length=200, verbose_name='Name', null=True)
     color = models.CharField(
         'Цветовой HEX-код',
@@ -44,7 +44,7 @@ class Tags(models.Model):
         return self.name
 
 
-class Recipes(models.Model):
+class Recipe(models.Model):
     author = models.ForeignKey(to=User, related_name='recipes',
                                on_delete=models.CASCADE,
                                verbose_name='Author')
@@ -58,7 +58,7 @@ class Recipes(models.Model):
                                          blank=False,
                                          related_name='recipes',
                                          through='IngredientsInRecipe',)
-    tags = models.ManyToManyField(to=Tags, blank=False, verbose_name='tags',
+    tags = models.ManyToManyField(to=Tag, blank=False, verbose_name='tags',
                                   )
     cooking_time = models.PositiveIntegerField(blank=False,
                                                verbose_name='Cooking time')
@@ -76,7 +76,7 @@ class Recipes(models.Model):
 
 class IngredientsInRecipe(models.Model):
     recipe = models.ForeignKey(
-        Recipes,
+        Recipe,
         on_delete=models.CASCADE,
         related_name='ingredient_list',
         verbose_name='Рецепт',
@@ -92,8 +92,14 @@ class IngredientsInRecipe(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Ингредиент в рецепте'
-        verbose_name_plural = 'Ингредиенты в рецептах'
+        verbose_name = 'Ингридиент в рецепте'
+        verbose_name_plural = 'Ингридиенты в рецептах'
+        constraints = (
+            models.UniqueConstraint(
+                fields=('recipe', 'ingredient'),
+                name='unique_ingredient_in_recipe'
+            ),
+        )
 
     def __str__(self):
         return (
@@ -102,13 +108,13 @@ class IngredientsInRecipe(models.Model):
         )
 
 
-class Favourites(models.Model):
+class Favourite(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              related_name='favourites',
                              verbose_name='User',
                              )
-    recipe = models.ForeignKey(Recipes,
+    recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
                                related_name='favourites',
                                verbose_name='Recipe',
@@ -135,7 +141,7 @@ class ShoppingList(models.Model):
                              related_name='shopping_list_user',
                              verbose_name='User',
                              )
-    recipe = models.ForeignKey(Recipes,
+    recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
                                related_name='shopping_list_recipe',
                                verbose_name='Recipe',

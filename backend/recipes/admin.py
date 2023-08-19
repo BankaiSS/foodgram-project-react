@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Favourites, IngredientsInRecipe, Recipes, ShoppingList
+from .models import Favourite, IngredientsInRecipe, Recipe, ShoppingList
 
 
 class RecipesInline(admin.StackedInline):
@@ -8,7 +8,7 @@ class RecipesInline(admin.StackedInline):
     min_num = 1
 
 
-@admin.register(Recipes)
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'author', 'recipe_in_favorites',
@@ -17,7 +17,7 @@ class RecipeAdmin(admin.ModelAdmin):
     inlines = (RecipesInline,)
 
     def recipe_in_favorites(self, instance):
-        return instance.favourites.count()
+        return instance.favourite.count()
 
 
 @admin.register(IngredientsInRecipe)
@@ -25,7 +25,7 @@ class IngredientInRecipeAdmin(admin.ModelAdmin):
     list_display = ('recipe', 'ingredient', 'amount')
 
 
-@admin.register(Favourites)
+@admin.register(Favourite)
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
 

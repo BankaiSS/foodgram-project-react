@@ -1,7 +1,7 @@
 from django_filters import rest_framework
 from rest_framework.filters import SearchFilter
 
-from recipes.models import Recipes
+from recipes.models import Recipe
 from users.models import User
 
 
@@ -17,7 +17,7 @@ class RecipeFilter(rest_framework.FilterSet):
         method='filter_is_in_shopping_cart')
 
     class Meta:
-        model = Recipes
+        model = Recipe
         fields = ('author', 'tags', 'is_favorited', 'is_in_shopping_cart')
 
     def filter_is_favorited(self, queryset, name, value):
