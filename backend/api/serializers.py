@@ -184,18 +184,34 @@ class RecipesPostUpdateDeleteSerializer(serializers.ModelSerializer):
                 )
             )
         IngredientsInRecipe.objects.bulk_create(ingredients_list)
-
         return recipe
 
     def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.text = validated_data.get('text', instance.text)
+        instance.image = validated_data.get('image', instance.image)
+        instance.cooking_time = validated_data.get(
+            'cooking_time',
+            instance.cooking_time
+        )
+        ingredients = validated_data.pop('recipe_ingredients')
         tags = validated_data.pop('tags')
-        ingredients = validated_data.pop('ingredients')
-        instance = super().update(instance, validated_data)
         instance.tags.clear()
-        instance.tags.set(tags)
+        instance.tags.add(*tags)
         instance.ingredients.clear()
-        self.create_ingredients_amounts(recipe=instance,
-                                        ingredients=ingredients)
+        recipe = instance
+        ingredients_list = []
+        for ingredient in ingredients:
+            current_ingredient = ingredient['ingredient']['id']
+            current_amount = ingredient['amount']
+            ingredients_list.append(
+                IngredientsInRecipe(
+                    recipe=recipe,
+                    ingredient=current_ingredient,
+                    amount=current_amount
+                )
+            )
+        IngredientsInRecipe.objects.bulk_create(ingredients_list)
         instance.save()
         return instance
 
