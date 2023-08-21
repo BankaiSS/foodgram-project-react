@@ -1,6 +1,7 @@
 from django.contrib import admin
+from django.contrib.admin import display
 
-from .models import Favourite, IngredientsInRecipe, Recipe, ShoppingList
+from .models import Favourite, IngredientsInRecipe, Recipe, ShoppingList, Tag
 
 
 class RecipesInline(admin.StackedInline):
@@ -16,8 +17,9 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ('name', 'author', 'tags')
     inlines = (RecipesInline,)
 
-    def recipe_in_favorites(self, instance):
-        return instance.favourite.count()
+    @display(description='Количество в избранных')
+    def recipe_in_favorites(self, obj):
+        return obj.favourites.count()
 
 
 @admin.register(IngredientsInRecipe)
@@ -33,3 +35,7 @@ class FavoriteAdmin(admin.ModelAdmin):
 @admin.register(ShoppingList)
 class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('name', 'color', 'slug')

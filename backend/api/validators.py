@@ -6,9 +6,8 @@ NOT_TO_USE_USERNAMES = ('me', 'set_password', 'subscribe', 'subscriptions')
 
 
 def validate_email(value):
-    if value in User.objects.all():
-        raise exceptions.ValidationError('Email уже занят.n\
-                                         Пожалуйста, используйте другую!')
+    if User.objects.filter(email=value).exists():
+        raise exceptions.ValidationError('Email уже занят. Пожалуйста, используйте другую!')
     return value
 
 
