@@ -7,18 +7,18 @@ User = get_user_model()
 
 
 class Ingredient(models.Model):
-    name = models.CharField(max_length=200, verbose_name='Name')
-    measurement_unit = models.CharField(max_length=200,
-                                        verbose_name='measurement_unit',)
+    """ Модель Ингридиент """
+
+    name = models.CharField('Название', max_length=200)
+    measurement_unit = models.CharField('Единица измерения', max_length=200)
 
     class Meta:
-        verbose_name = 'Ingredient'
-        verbose_name_plural = 'Ingredients'
-        ordering = ['pk']
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+        ordering = ['name']
 
     def __str__(self):
-        return self.name
-
+        return f'{self.name}, {self.measurement_unit}'
 
 class Tag(models.Model):
     name = models.CharField(max_length=200, verbose_name='Name', null=True)
@@ -45,11 +45,12 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
+    """Модель для рецептов"""
     author = models.ForeignKey(to=User, related_name='recipes',
                                on_delete=models.CASCADE,
                                verbose_name='Author')
     name = models.CharField(verbose_name='Name', max_length=50, blank=False)
-    image = models.ImageField(upload_to='recipes/',
+    image = models.ImageField(upload_to='recipes/images/',
                               blank=False, verbose_name='Image')
     text = models.TextField(verbose_name='Description', blank=False,
                             max_length=2000)
@@ -75,6 +76,8 @@ class Recipe(models.Model):
 
 
 class IngredientsInRecipe(models.Model):
+    """ Модель для связи Ингридиента и Рецепта """
+
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -92,19 +95,12 @@ class IngredientsInRecipe(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Ингридиент в рецепте'
-        verbose_name_plural = 'Ингридиенты в рецептах'
-        constraints = (
-            models.UniqueConstraint(
-                fields=('recipe', 'ingredient'),
-                name='unique_ingredient_in_recipe'
-            ),
-        )
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
 
     def __str__(self):
         return (
-            f'{self.ingredient.name} ({self.ingredient.measurement_unit})'
-            f' - {self.amount} '
+            f'{self.ingredient.name} ({self.ingredient.measurement_unit}) - {self.amount} '
         )
 
 

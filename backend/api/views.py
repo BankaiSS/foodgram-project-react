@@ -105,8 +105,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.prefetch_related('tags',
-                                               'recipe_ingredients').all()
+    queryset = Recipe.objects.all()
     permission_classes = [IsAuthorOrAdminOrReadOnly, ]
     pagination_class = CustomPagination
     serializer_class = RecipesSerializer
