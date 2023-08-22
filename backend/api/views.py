@@ -1,26 +1,24 @@
 from datetime import datetime
-
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
+from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingList, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
-
-from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingList, Tag)
 from users.models import Subscription, User
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import CustomPagination
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
-from .serializers import (IngredientSerializer, RecipeForShopAndFavSerializer,
+from .serializers import (CustomUserSerializer, IngredientSerializer,
+                          RecipeForShopAndFavSerializer,
                           RecipePostUpdateDeleteSerializer, RecipeSerializer,
-                          SubscriptionSerializer, TagSerializer,
-                          CustomUserSerializer)
+                          SubscriptionSerializer, TagSerializer)
 
 
 class UserViewSet(UserViewSet):
