@@ -5,15 +5,15 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
+from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingList, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
-
-from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingList, Tag)
 from users.models import Subscription, User
+
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import CustomPagination
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
@@ -40,7 +40,7 @@ class UserViewSet(UserViewSet):
                                             many=True,
                                             context={'request': request})
         return self.get_paginated_response(serializer.data)
-    
+
     @action(
         detail=True,
         methods=['post', 'delete'],
@@ -129,7 +129,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response = HttpResponse(shopping_list, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
-    
+
     @action(
         detail=True,
         methods=['post', 'delete'],
@@ -157,7 +157,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response({'errors': 'Рецепт уже удален!'},
                         status=status.HTTP_400_BAD_REQUEST)
-    
+
     @action(
         detail=True,
         methods=['post', 'delete'],
@@ -168,4 +168,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return self.add_to(Favourite, request.user, pk)
         else:
             return self.delete_from(Favourite, request.user, pk)
-
