@@ -30,7 +30,7 @@ class User(AbstractUser):
 
 
 class Subscription(models.Model):
-    subscriber = models.ForeignKey(
+    user = models.ForeignKey(
         User,
         related_name='subscriber',
         verbose_name="Подписчик",
@@ -46,7 +46,7 @@ class Subscription(models.Model):
     class Meta:
         ordering = ['-id']
         constraints = [
-            UniqueConstraint(fields=['subscriber', 'author'],
+            UniqueConstraint(fields=['user', 'author'],
                              name='unique_subscription')
         ]
         verbose_name = 'Подписка'

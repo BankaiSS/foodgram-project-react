@@ -3,14 +3,14 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingList, Tag)
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import IntegerField
 from rest_framework.relations import PrimaryKeyRelatedField
-from users.models import Subscription, User
 
+from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingList, Tag)
+from users.models import Subscription, User
 from . import validators
 
 
@@ -104,16 +104,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    def get_ingredients(self, obj):
-        recipe = obj
-        ingredients = recipe.ingredients.values(
-            'id',
-            'name',
-            'measurement_unit',
-            amount=F('ingredientinrecipe__amount')
-        )
-        return ingredients
-
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if request.user.is_anonymous:
@@ -127,6 +117,16 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return ShoppingList.objects.filter(recipe=obj,
                                            user=request.user).exists()
+    
+    def get_ingredients(self, obj):
+        recipe = obj
+        ingredients = recipe.ingredients.values(
+            'id',
+            'name',
+            'measurement_unit',
+            amount=F('ingredientinrecipe__amount')
+        )
+        return ingredients
 
 
 class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
