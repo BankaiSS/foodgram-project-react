@@ -60,19 +60,6 @@ class UserPostSerializer(UserSerializer):
         return user
 
 
-class SetPasswordSerializer(serializers.ModelSerializer):
-    new_password = serializers.CharField(
-        max_length=128,
-        required=True,)
-    current_password = serializers.CharField(
-        max_length=128,
-        required=True,)
-
-    class Meta:
-        model = User
-        fields = ('new_password', 'current_password')
-
-
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -277,32 +264,3 @@ class SubscriptionSerializer(UserSerializer):
             recipes = recipes[:int(limit)]
         serializer = RecipeForShopAndFavSerializer(recipes, many=True, read_only=True)
         return serializer.data
-
-
-class SubscribeAuthorSerializer(serializers.ModelSerializer):
-    email = serializers.ReadOnlyField()
-    username = serializers.ReadOnlyField()
-    is_subscribed = serializers.SerializerMethodField()
-    recipes = RecipeForShopAndFavSerializer(many=True, read_only=True)
-    recipes_count = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ('email', 'id',
-                  'username', 'first_name',
-                  'last_name', 'is_subscribed',
-                  'recipes', 'recipes_count')
-
-    def validate(self, obj):
-        if (self.context['request'].user == obj):
-            raise serializers.ValidationError({'errors': 'Ошибка подписки.'})
-        return obj
-
-    def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return Subscription.objects.filter(user=user, author=obj).exists()
-
-    def get_recipes_count(self, obj):
-        return obj.recipes.count()
