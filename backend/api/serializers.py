@@ -6,15 +6,16 @@ from drf_extra_fields.fields import Base64ImageField
 from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import IntegerField, SerializerMethodField
+from rest_framework.fields import IntegerField
 from rest_framework.relations import PrimaryKeyRelatedField
-from users.models import Subscription, User
 
+from recipes.models import Favourite, ShoppingList
+from users.models import Subscription, User
 from . import validators
 
 
 class UserSerializer(UserCreateSerializer):
-    is_subscribed = SerializerMethodField(read_only=True)
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
@@ -83,10 +84,10 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
-    ingredients = SerializerMethodField()
+    ingredients = serializers.SerializerMethodField()
     image = Base64ImageField()
-    is_favorited = SerializerMethodField(read_only=True)
-    is_in_shopping_cart = SerializerMethodField(read_only=True)
+    is_favorited = serializers.SerializerMethodField(read_only=True)
+    is_in_shopping_cart = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recipe
@@ -114,17 +115,18 @@ class RecipeSerializer(serializers.ModelSerializer):
         return ingredients
 
     def get_is_favorited(self, obj):
-        user = self.context.get('request').user
-        if user.is_anonymous:
+        request = self.context.get('request')
+        if request.user.is_anonymous:
             return False
-        return user.favorites.filter(recipe=obj).exists()
+        return Favourite.objects.filter(recipe=obj,
+                                        user=request.user).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        user = self.context.get('request').user
-        if user.is_anonymous:
+        request = self.context.get('request')
+        if request.user.is_anonymous:
             return False
-        return user.shopping_cart.filter(recipe=obj).exists()
-
+        return ShoppingList.objects.filter(recipe=obj,
+                                           user=request.user).exists()
 
 
 class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
@@ -174,7 +176,8 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
         tags_list = []
         for tag in tags:
             if tag in tags_list:
-                raise ValidationError({'tags': 'Теги должны быть уникальными!'})
+                raise ValidationError({'tags':
+                                       'Теги должны быть уникальными!'})
             tags_list.append(tag)
         return value
 
@@ -205,7 +208,8 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
         instance.tags.clear()
         instance.tags.set(tags)
         instance.ingredients.clear()
-        self.create_ingredients_amounts(recipe=instance, ingredients=ingredients)
+        self.create_ingredients_amounts(recipe=instance,
+                                        ingredients=ingredients)
         instance.save()
         return instance
 
@@ -229,8 +233,8 @@ class RecipeForShopAndFavSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(UserSerializer):
-    recipes_count = SerializerMethodField()
-    recipes = SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
 
     class Meta(UserSerializer.Meta):
         fields = UserSerializer.Meta.fields + (
@@ -262,5 +266,7 @@ class SubscriptionSerializer(UserSerializer):
         recipes = obj.recipes.all()
         if limit:
             recipes = recipes[:int(limit)]
-        serializer = RecipeForShopAndFavSerializer(recipes, many=True, read_only=True)
+        serializer = RecipeForShopAndFavSerializer(recipes,
+                                                   many=True,
+                                                   read_only=True)
         return serializer.data

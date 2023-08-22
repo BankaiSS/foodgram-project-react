@@ -19,7 +19,8 @@ from .pagination import CustomPagination
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeForShopAndFavSerializer,
                           RecipePostUpdateDeleteSerializer, RecipeSerializer,
-                          SubscriptionSerializer, TagSerializer, UserSerializer)
+                          SubscriptionSerializer, TagSerializer,
+                          UserSerializer)
 
 
 class UserViewSet(UserViewSet):
@@ -38,8 +39,8 @@ class UserViewSet(UserViewSet):
 
         if request.method == 'POST':
             serializer = SubscriptionSerializer(author,
-                                             data=request.data,
-                                             context={"request": request})
+                                                data=request.data,
+                                                context={"request": request})
             serializer.is_valid(raise_exception=True)
             serializer.save(subscriber=request.user, author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -60,8 +61,8 @@ class UserViewSet(UserViewSet):
         queryset = User.objects.filter(subscribing__user=user)
         pages = self.paginate_queryset(queryset)
         serializer = SubscriptionSerializer(pages,
-                                         many=True,
-                                         context={'request': request})
+                                            many=True,
+                                            context={'request': request})
         return self.get_paginated_response(serializer.data)
 
 
@@ -118,7 +119,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def add_to(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
-            return Response({'errors': 'Рецепт уже добавлен!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'errors': 'Рецепт уже добавлен!'},
+                            status=status.HTTP_400_BAD_REQUEST)
         recipe = get_object_or_404(Recipe, id=pk)
         model.objects.create(user=user, recipe=recipe)
         serializer = RecipeForShopAndFavSerializer(recipe)
@@ -129,7 +131,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if obj.exists():
             obj.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({'errors': 'Рецепт уже удален!'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'errors': 'Рецепт уже удален!'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=False,
@@ -163,5 +166,4 @@ class RecipeViewSet(viewsets.ModelViewSet):
         filename = f'{user.username}_shopping_list.txt'
         response = HttpResponse(shopping_list, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename={filename}'
-
         return response
