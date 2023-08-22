@@ -20,22 +20,13 @@ class User(AbstractUser):
         ordering = ['id']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        constraints = ( 
+            models.UniqueConstraint(fields=('email', 'username'), 
+                                    name='unique_auth'), 
+        ) 
 
     def __str__(self):
         return self.username
-
-    class Meta:
-        ordering = ['id']
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-        constraints = (
-            models.UniqueConstraint(fields=('email', 'username'),
-                                    name='unique_auth'),
-        )
-
-    def __str__(self):
-        return self.username
-
 
 class Subscription(models.Model):
     subscriber = models.ForeignKey(

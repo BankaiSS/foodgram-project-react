@@ -17,7 +17,7 @@ services:
     build: ./backend/
     env_file: .env
     volumes:
-      - static:/static_backend
+      - static:/backend_static
       - media:/media
   frontend:
     container_name: foodgram_frontend
