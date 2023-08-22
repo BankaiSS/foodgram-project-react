@@ -1,0 +1,47 @@
+version: '3.3'
+
+services:
+
+  db:
+    image: postgres:13.0
+    volumes:
+      - db_vol:/var/lib/postgresql/data/
+    restart: always
+    env_file:
+      - .env
+  
+  backend:
+    image: bankaiss/foodgram_backend:latest
+    volumes:
+      - static_vol:/app/static/
+      - media_vol:/app/media/
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  frontend:
+    image: bankaiss/foodgram_frontend:latest
+    volumes:
+      - ../frontend/:/app/result_build/
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:1.19.3
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ../frontend/build:/usr/share/nginx/html/
+      - ./docs/:/usr/share/nginx/html/api/docs/
+      - static_vol:/var/html/static/
+      - media_vol:/var/html/media/
+    restart: always
+    depends_on:
+      - frontend
+
+volumes:
+  db_vol:
+  static_vol:
+  media_vol:

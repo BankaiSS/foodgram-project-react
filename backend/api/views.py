@@ -20,12 +20,12 @@ from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeForShopAndFavSerializer,
                           RecipePostUpdateDeleteSerializer, RecipeSerializer,
                           SubscriptionSerializer, TagSerializer,
-                          UserSerializer)
+                          CustomUserSerializer)
 
 
 class UserViewSet(UserViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = CustomUserSerializer
     pagination_class = CustomPagination
 
     @action(

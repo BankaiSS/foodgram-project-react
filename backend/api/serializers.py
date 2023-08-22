@@ -1,8 +1,8 @@
 from django.db import transaction
 from django.db.models import F
 from django.shortcuts import get_object_or_404
-from djoser.serializers import UserCreateSerializer
 from drf_extra_fields.fields import Base64ImageField
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from recipes.models import Ingredient, IngredientInRecipe, Recipe, Tag
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
@@ -14,7 +14,7 @@ from users.models import Subscription, User
 from . import validators
 
 
-class UserSerializer(UserCreateSerializer):
+class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -35,7 +35,7 @@ class UserSerializer(UserCreateSerializer):
         return Subscription.objects.filter(user=user, author=obj).exists()
 
 
-class UserPostSerializer(UserSerializer):
+class UserPostSerializer(UserCreateSerializer):
     class Meta:
         model = User
         fields = tuple(User.REQUIRED_FIELDS) + (
@@ -83,7 +83,7 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    author = UserSerializer(read_only=True)
+    author = CustomUserSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField(read_only=True)
@@ -130,7 +130,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
+    author = CustomUserSerializer(read_only=True)
     tags = PrimaryKeyRelatedField(queryset=Tag.objects.all(),
                                   many=True)
     ingredients = IngredientInRecipeSerializer(many=True)
@@ -232,12 +232,12 @@ class RecipeForShopAndFavSerializer(serializers.ModelSerializer):
         )
 
 
-class SubscriptionSerializer(UserSerializer):
+class SubscriptionSerializer(CustomUserSerializer):
     recipes_count = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
 
     class Meta(UserSerializer.Meta):
-        fields = UserSerializer.Meta.fields + (
+        fields = CustomUserSerializer.Meta.fields + (
             'recipes_count', 'recipes'
         )
         read_only_fields = ('email', 'username')
