@@ -150,13 +150,11 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    @staticmethod
-    def validate_ingredients(value):
+    def validate_ingredients(self, value):
         validators.validate_ingredients(value)
         return value
 
-    @staticmethod
-    def validate_tags(value):
+    def validate_tags(self, value):
         validators.validate_tags(value)
         return value
 
@@ -221,8 +219,7 @@ class SubscriptionSerializer(CustomUserSerializer):
         )
         read_only_fields = ('email', 'username')
 
-    @staticmethod
-    def validate_subscription(value):
+    def validate_subscription(self, value):
         validators.validate_subscription(value)
         return value
 
