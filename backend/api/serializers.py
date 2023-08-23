@@ -16,6 +16,7 @@ from . import validators
 
 User = get_user_model()
 
+
 class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
@@ -171,7 +172,6 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
             ingredients_list.append(ingredient)
         return value
 
-
     def validate_tags(self, value):
         tags = value
         if not tags:
@@ -180,7 +180,7 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
         for tag in tags:
             if tag in tags_list:
                 raise ValidationError({'tags':
-                                    'Теги должны быть уникальными!'})
+                                      'Теги должны быть уникальными!'})
             tags_list.append(tag)
         return value
 

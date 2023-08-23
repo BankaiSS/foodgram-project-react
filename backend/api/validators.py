@@ -17,9 +17,3 @@ def validate_username(value):
         raise exceptions.ValidationError('Некорректный username.n\
                                           Пожалуйста, исправьте!')
     return value
-
-
-
-
-
-
