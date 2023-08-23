@@ -17,7 +17,6 @@ from . import validators
 User = get_user_model()
 
 
-
 class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
