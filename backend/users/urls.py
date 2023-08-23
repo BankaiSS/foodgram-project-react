@@ -1,4 +1,4 @@
-from api.views import UserViewSet
+from api.views import CustomUserViewSet
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
@@ -6,7 +6,7 @@ app_name = 'users'
 
 router = DefaultRouter()
 
-router.register('users', UserViewSet)
+router.register('users', CustomUserViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
