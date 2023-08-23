@@ -13,11 +13,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
-from users.models import Subscription, User
+from users.models import Subscription
 
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import CustomPagination
-from .permissions import AdminAuthorOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .serializers import (CustomUserSerializer, IngredientSerializer,
                           RecipeForShopAndFavSerializer,
                           RecipePostUpdateDeleteSerializer, RecipeSerializer,
@@ -73,20 +73,20 @@ class CustomUserViewSet(UserViewSet):
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (AdminAuthorOrReadOnly)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = (AdminAuthorOrReadOnly)
+    permission_classes = (IsAdminOrReadOnly)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (AdminAuthorOrReadOnly)
+    permission_classes = (IsAuthorOrReadOnly, IsAdminOrReadOnly)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
