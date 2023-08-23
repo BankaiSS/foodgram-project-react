@@ -1,13 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import F
-from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
                             ShoppingList, Tag)
-from rest_framework import serializers, status
-from rest_framework.exceptions import ValidationError
+from rest_framework import serializers
 from rest_framework.fields import IntegerField
 from rest_framework.relations import PrimaryKeyRelatedField
 from users.models import Subscription, User
@@ -152,36 +150,14 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    def validate_ingredients(self, value):
-        ingredients = value
-        if not ingredients:
-            raise ValidationError({
-                'ingredients': 'Нужен хотя бы один ингредиент!'
-            })
-        ingredients_list = []
-        for item in ingredients:
-            ingredient = get_object_or_404(Ingredient, id=item['id'])
-            if ingredient in ingredients_list:
-                raise ValidationError({
-                    'ingredients': 'Ингридиенты не могут повторяться!'
-                })
-            if int(item['amount']) <= 0:
-                raise ValidationError({
-                    'amount': 'Количество ингредиента должно быть больше 0!'
-                })
-            ingredients_list.append(ingredient)
+    @staticmethod
+    def validate_ingredients(value):
+        validators.validate_ingredients(value)
         return value
 
-    def validate_tags(self, value):
-        tags = value
-        if not tags:
-            raise ValidationError({'tags': 'Нужно выбрать хотя бы один тег!'})
-        tags_list = []
-        for tag in tags:
-            if tag in tags_list:
-                raise ValidationError({'tags':
-                                       'Теги должны быть уникальными!'})
-            tags_list.append(tag)
+    @staticmethod
+    def validate_tags(value):
+        validators.validate_tags(value)
         return value
 
     @transaction.atomic
@@ -245,20 +221,10 @@ class SubscriptionSerializer(CustomUserSerializer):
         )
         read_only_fields = ('email', 'username')
 
-    def validate(self, data):
-        author = self.instance
-        user = self.context.get('request').user
-        if Subscription.objects.filter(author=author, user=user).exists():
-            raise ValidationError(
-                detail='Вы уже подписаны на этого пользователя!',
-                code=status.HTTP_400_BAD_REQUEST
-            )
-        if user == author:
-            raise ValidationError(
-                detail='Вы не можете подписаться на самого себя!',
-                code=status.HTTP_400_BAD_REQUEST
-            )
-        return data
+    @staticmethod
+    def validate_subscription(value):
+        validators.validate_subscription(value)
+        return value
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
