@@ -1,17 +1,17 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import F
-from django.shortcuts import get_object_or_404
+from django.http import Http404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingList, Tag)
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import IntegerField
 from rest_framework.relations import PrimaryKeyRelatedField
-from users.models import Subscription
 
+from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingList, Tag)
+from users.models import Subscription
 from . import validators
 
 User = get_user_model()
@@ -158,9 +158,13 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
             raise ValidationError({
                 'ingredients': 'Нужен хотя бы один ингредиент!'
             })
-        ingredients_list = []
+        ingredient_ids = [item['id'] for item in ingredients]
+        ingredients_objects = Ingredient.objects.filter(id__in=ingredient_ids)
+        ingredients_list = list(ingredients_objects)
         for item in ingredients:
-            ingredient = get_object_or_404(Ingredient, id=item['id'])
+            ingredient = next((i for i in ingredients_list if i.id == item['id']), None)
+            if ingredient is None:
+                raise Http404('Такого ингридиента не существует')
             if ingredient in ingredients_list:
                 raise ValidationError({
                     'ingredients': 'Ингридиенты не могут повторяться!'
@@ -171,7 +175,7 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
                 })
             ingredients_list.append(ingredient)
         return value
-
+    
     def validate_tags(self, value):
         tags = value
         if not tags:
@@ -188,7 +192,7 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
     def create_ingredients_amounts(self, ingredients, recipe):
         IngredientInRecipe.objects.bulk_create(
             [IngredientInRecipe(
-                ingredient=Ingredient.objects.get(id=ingredient['id']),
+                ingredient_id=ingredient['id'],
                 recipe=recipe,
                 amount=ingredient['amount']
             ) for ingredient in ingredients]
@@ -213,7 +217,6 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
         instance.ingredients.clear()
         self.create_ingredients_amounts(recipe=instance,
                                         ingredients=ingredients)
-        instance.save()
         return instance
 
     def to_representation(self, instance):

@@ -14,7 +14,3 @@ class IsAuthorOrReadOnly(BasePermission):
             return True
         return obj.author == request.user or request.user.is_superuser
 
-    def has_permission(self, request, view):
-        if request.method == 'DELETE':
-            return True
-        return super().has_permission(request, view)

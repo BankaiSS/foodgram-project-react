@@ -1,4 +1,5 @@
 from rest_framework import exceptions
+
 from users.models import User
 
 NOT_TO_USE_USERNAMES = ('me', 'set_password', 'subscribe', 'subscriptions')
