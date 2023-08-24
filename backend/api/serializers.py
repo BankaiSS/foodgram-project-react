@@ -162,7 +162,8 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
         ingredients_objects = Ingredient.objects.filter(id__in=ingredient_ids)
         ingredients_list = list(ingredients_objects)
         for item in ingredients:
-            ingredient = next((i for i in ingredients_list if i.id == item['id']), None)
+            ingredient = next((i for i in ingredients_list
+                               if i.id == item['id']), None)
             if ingredient is None:
                 raise Http404('Такого ингридиента не существует')
             if ingredient in ingredients_list:
@@ -175,7 +176,7 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
                 })
             ingredients_list.append(ingredient)
         return value
-    
+
     def validate_tags(self, value):
         tags = value
         if not tags:
