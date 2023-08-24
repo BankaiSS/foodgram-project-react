@@ -158,23 +158,21 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
             raise ValidationError({
                 'ingredients': 'Нужен хотя бы один ингредиент!'
             })
-        ingredient_ids = [item['id'] for item in ingredients]
-        ingredients_objects = Ingredient.objects.filter(id__in=ingredient_ids)
-        ingredients_list = list(ingredients_objects)
+        ingredient_ids = set()
         for item in ingredients:
-            ingredient = next((i for i in ingredients_list
-                               if i.id == item['id']), None)
-            if ingredient is None:
-                raise Http404('Такого ингридиента не существует')
-            if ingredient in ingredients_list:
+            ingredient_id = item['id']
+            if ingredient_id in ingredient_ids:
                 raise ValidationError({
                     'ingredients': 'Ингридиенты не могут повторяться!'
                 })
+            ingredient_ids.add(ingredient_id)
+            ingredient = Ingredient.objects.filter(id=ingredient_id).first()
+            if ingredient is None:
+                raise Http404('Такого ингридиента не существует')
             if int(item['amount']) <= 0:
                 raise ValidationError({
                     'amount': 'Количество ингредиента должно быть больше 0!'
                 })
-            ingredients_list.append(ingredient)
         return value
 
     def validate_tags(self, value):
