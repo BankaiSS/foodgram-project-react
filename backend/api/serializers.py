@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import F
-from django.http import Http404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, status
@@ -163,12 +162,9 @@ class RecipePostUpdateDeleteSerializer(serializers.ModelSerializer):
             ingredient_id = item['id']
             if ingredient_id in ingredient_ids:
                 raise ValidationError({
-                    'ingredients': 'Ингридиенты не могут повторяться!'
+                    'ingredients': 'Ингредиенты не могут повторяться!'
                 })
             ingredient_ids.add(ingredient_id)
-            ingredient = Ingredient.objects.filter(id=ingredient_id).first()
-            if ingredient is None:
-                raise Http404('Такого ингридиента не существует')
             if int(item['amount']) <= 0:
                 raise ValidationError({
                     'amount': 'Количество ингредиента должно быть больше 0!'
